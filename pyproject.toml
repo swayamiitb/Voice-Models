@@ -1,0 +1,109 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "vajravoice"
+version = "0.1.0"
+description = "VajraVoice — a six-module neural text-to-speech engine assembled from permissively-licensed open-source components, reproducing the MAI-Voice-2 architectural class for Indian languages."
+readme = "README.md"
+license = { text = "MIT" }
+authors = [
+    { name = "swayamiitb" }
+]
+keywords = [
+    "text-to-speech", "tts", "neural-tts", "voice-cloning",
+    "indian-languages", "marathi", "code-switching",
+    "flow-matching", "ecapa-tdnn", "wavlm", "f5-tts", "vocos",
+    "self-supervised-speech", "open-source"
+]
+requires-python = ">=3.10"
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Multimedia :: Sound/Audio :: Speech",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+    "pydantic>=2.6,<3",
+    "pyyaml>=6.0",
+    "omegaconf>=2.3",
+    "typeguard>=4.3",
+]
+
+[project.optional-dependencies]
+api = [
+    "fastapi>=0.110",
+    "uvicorn[standard]>=0.29",
+    "websockets>=12.0",
+    "python-multipart>=0.0.9",
+]
+audio = [
+    "numpy>=1.26,<2.3",
+    "scipy>=1.13",
+    "soundfile>=0.12",
+    "librosa>=0.10",
+    "PyAV>=12",
+    "pydub>=0.25",
+]
+# Heavy ML stack — install only on a GPU box; lazy-imported, never required at import time.
+models = [
+    "torch>=2.2",
+    "torchaudio>=2.2",
+    "transformers>=4.40",
+    "speechbrain>=1.0",
+    "onnxruntime>=1.17",
+    "xformers>=0.0.23",
+    "misaki>=0.1",
+    "epitran>=1.24",
+    "funasr>=1.0",
+    "accelerate>=0.30",
+    "bitsandbytes>=0.43",
+]
+dev = [
+    "pytest>=8.0",
+    "pytest-cov>=5.0",
+    "ruff>=0.4",
+    "mypy>=1.10",
+]
+all = ["vajravoice[api,audio,models,dev]"]
+
+[project.urls]
+"Homepage" = "https://github.com/swayamiitb/Voice-Models"
+"Repository" = "https://github.com/swayamiitb/Voice-Models"
+"Architecture Doc" = "https://github.com/swayamiitb/Voice-Models/blob/main/ARCHITECTURE.md"
+
+[project.scripts]
+vajravoice-synthesize = "vajravoice.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["vajravoice*"]
+exclude = ["tests*", "scripts*", "configs*", "benchmarks*", "docs*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+addopts = "-ra --strict-markers"
+markers = [
+    "gpu: requires a CUDA GPU and the heavy ML stack",
+    "slow: long-running end-to-end benchmarks",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+extend-exclude = ["weights", "checkpoints"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "SIM", "PL"]
+ignore = ["PLR0913", "E501"]
+
+[tool.mypy]
+python_version = "3.10"
+ignore_missing_imports = true
+warn_unused_ignores = true

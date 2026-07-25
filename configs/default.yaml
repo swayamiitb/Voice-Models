@@ -1,0 +1,69 @@
+# VajraVoice pipeline config — DEFAULT (real Part2.md components)
+#
+# This is the production-target config from Part2.md: each module slot is
+# filled with the SOTA open-source component the architecture maps to.
+# Requires the heavy ML stack:
+#
+#     pip install -e ".[models]"
+#
+# on a CUDA box with ≥ 11.5 GB VRAM (designed for a 32 GB GPU; see
+# benchmarks/memory_budget.md). On a smaller box, swap components for lighter
+# alternatives (e.g. F5-TTS → IndexTTS-2, Llama-3-8B → a smaller aligner).
+#
+# NOTE: set `commercial: true` once you have a permissively-licensed F5-TTS
+# checkpoint (e.g. OpenF5-TTS) and have retrained the ECAPA-TDNN encoder on
+# consented data instead of VoxCeleb. The licensing guard in
+# vajravoice/utils/licensing.py will refuse to load otherwise.
+
+name: vajravoice-part2
+description: |
+  Full Part2.md MAI-Voice-2-class assembly: WeTextProcessing + Misaki +
+  Epitran + XLM-RoBERTa (M1) → ECAPA-TDNN + WavLM-Large (M2) → StyleTTS2 +
+  Llama-3-8B 4-bit + Emotion2Vec (M3) → ShieldGemma-2B + AudioSeal (M4) →
+  Matcha-TTS + F5-TTS flow-matching (M5) → Vocos iSTFT streaming (M6).
+commercial: false                    # flip to true after checkpoint replacement
+sample_rate: 24000
+seed: 17
+
+modules:
+  m1_linguistic:
+    component: Part2LinguisticModule
+    kwargs:
+      wfst_grammar: WeTextProcessing      # PyNini/OpenFst
+      g2p_backend: misaki+epitran         # NOT eSpeak-ng (GPL)
+      homograph_model: bert-mini-int8
+      umim_model: xlm-roberta-base        # ONNX Runtime
+      indic_ruleset: indic-articulatory   # permissive Indic articulatory ruleset
+  m2_reference:
+    component: Part2ReferenceModule
+    kwargs:
+      speaker_encoder: ECAPA-TDNN         # SpeechBrain, VoxCeleb-trained
+      feature_extractor: WavLM-Large      # FP16 frozen
+      attention: xformers                 # memory-efficient cross-attention
+      vad: Silero-VAD
+  m3_prosody:
+    component: Part2ProsodyModule
+    kwargs:
+      fusion: StyleTTS2
+      global_context: Llama-3-8B          # 4-bit AWQ (~6 GB)
+      emotion: Emotion2Vec                # + gradient-reversal
+  m4_guardrails:
+    component: Part2GuardrailModule
+    kwargs:
+      moderation: ShieldGemma-2B          # INT8 (~1.2 GB)  [alt: LlamaGuard-3-1B]
+      consent: ECAPA-TDNN                 # speaker-match consent gate
+      watermark: AudioSeal                # MIT, code + weights
+  m5_generator:
+    component: Part2GeneratorModule
+    kwargs:
+      latent_predictor: Matcha-TTS        # OT-CFM
+      acoustic_transformer: F5-TTS        # DiT + flow matching, 4-8 steps
+      f5_checkpoint: SWivid/F5-TTS        # ⚠ CC-BY-NC — replace for commercial
+      use_mamba: false                    # research option (Mamba-2 SSM)
+  m6_vocoder:
+    component: Part2VocoderModule
+    kwargs:
+      vocoder: Vocos                      # ConvNeXt + iSTFT (~50 MB)
+      chunk_ms: 5000                      # long-form chunked inference
+      crossfade_ms: 50                    # equal-power overlap-add
+      packet_ms: 20                       # WebSocket frame size

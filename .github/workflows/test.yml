@@ -1,0 +1,52 @@
+name: tests
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.11", "3.12"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+
+      - name: Install package (lightweight deps only — no GPU stack)
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[api,audio,dev]"
+
+      - name: Lint
+        run: |
+          ruff check vajravoice tests || true   # advisory; does not fail the build
+
+      - name: Run stub-mode test suite
+        # The suite must pass without torch/transformers/speechbrain installed.
+        # That's the design promise: the repo's contract/wiring layer loads
+        # on a bare CPython interpreter.
+        run: pytest -q -m "not gpu and not slow"
+
+      - name: Verify CLI works end-to-end in stub mode
+        run: |
+          python -m scripts.synthesize \
+            --text "Namaskar, aaj aapan ek navin prakalp baddal bolu." \
+            --config configs/stub.yaml \
+            --out /tmp/out.wav
+          test -s /tmp/out.wav && echo "CLI synthesized audio successfully"
+
+      - name: Upload coverage
+        if: matrix.python-version == '3.11'
+        run: pytest --cov=vajravoice --cov-report=xml -m "not gpu and not slow" || true
+        continue-on-error: true

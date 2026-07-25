@@ -1,0 +1,83 @@
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+.eggs/
+build/
+dist/
+develop-eggs/
+downloads/
+parts/
+sdist/
+wheels/
+pip-wheel-metadata/
+.installed.cfg
+MANIFEST
+
+# --- Virtual environments ---
+venv/
+.venv/
+env/
+ENV/
+.python-version
+
+# --- Test / coverage / CI ---
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+coverage.xml
+*.cover
+.hypothesis/
+
+# --- Editors / OS ---
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# --- Type checkers ---
+.mypy_cache/
+.pyre/
+.pytype/
+.ruff_cache/
+
+# --- Model weights & datasets (do NOT commit) ---
+weights/
+checkpoints/
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+*.onnx
+*.bin
+!tests/fixtures/*.bin          # tiny test fixtures are fine
+*.wav
+*.mp3
+*.flac
+!tests/fixtures/*.wav          # tiny test audio fixtures
+!MAI-Voice-2-Samples/          # explicit opt-in (kept out of this repo anyway)
+
+# --- HuggingFace cache ---
+.cache/
+.huggingface/
+hf_cache/
+
+# --- Local runtime artifacts ---
+runs/
+outputs/
+*.log
+.env
+.env.local
+
+# --- Jupyter ---
+.ipynb_checkpoints/
+*.ipynb_checkpoints

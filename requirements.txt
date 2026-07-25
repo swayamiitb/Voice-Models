@@ -1,0 +1,39 @@
+# Core — pipeline, contracts, config
+pydantic>=2.6,<3
+pyyaml>=6.0
+omegaconf>=2.3
+typeguard>=4.3
+
+# API layer
+fastapi>=0.110
+uvicorn[standard]>=0.29
+websockets>=12.0
+python-multipart>=0.0.9
+
+# Audio I/O
+numpy>=1.26,<2.3
+scipy>=1.13
+soundfile>=0.12
+librosa>=0.10
+PyAV>=12           # FFmpeg wrapper — 20ms WebSocket packet framing
+pydub>=0.25        # optional audio utilities
+
+# --- Heavy ML deps (lazy-imported by the real component modules). ---
+# Listed here so `pip install -r requirements.txt` produces a reproducible env,
+# but the package imports cleanly WITHOUT these present (stub mode + tests
+# require none of them). CI installs only the lightweight subset above.
+#
+# torch>=2.2                # M2/M3/M5/M6 tensor ops, CUDA
+# torchaudio>=2.2           # MelSpectrogram transforms
+# transformers>=4.40        # XLM-RoBERTa (M1.3), Llama-3 / ShieldGemma (M3/M4)
+# speechbrain>=1.0          # ECAPA-TDNN speaker encoder (M2.2)
+# onnxruntime>=1.17         # XLM-R ONNX execution (M1.3)
+# xformers>=0.0.23          # memory-efficient cross-attention (M2.3)
+# misaki>=0.1               # English G2P (M1.2)
+# epitran>=1.24             # cross-lingual G2P (M1.2)
+# funasr>=1.0               # Emotion2Vec (M3.3)
+# WeTextProcessing>=1.0     # WFST text normalization (M1.1)
+# causal-conv1d>=1.4        # Mamba-2 backend (M5.2 research option)
+# mamba-ssm>=2.2            # Mamba-2 backend (M5.2 research option)
+# accelerate>=0.30          # 4-bit AWQ loading for Llama-3 (M3.2)
+# bitsandbytes>=0.43        # INT8 quantization for safety models (M4.1)

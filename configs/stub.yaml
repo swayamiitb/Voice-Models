@@ -1,0 +1,33 @@
+# VajraVoice pipeline config — STUB MODE
+#
+# Zero weights, zero GPU, zero heavy deps. Used by:
+#   * the test suite (pytest runs against this config by default)
+#   * CI (.github/workflows/test.yml)
+#   * the FastAPI server demo (`make serve`)
+#   * first-time repo clones — proves the pipeline wiring is correct
+#     without an 11 GB ML stack.
+#
+# Switch any module to its real Part2.md implementation by changing the
+# `component:` key (see configs/default.yaml).
+
+name: vajravoice-stub
+description: |
+  Stub pipeline — every module returns correctly-shaped dummy tensors so the
+  M1→M6 wiring and contract assertions are exercised end-to-end.
+commercial: false
+sample_rate: 24000
+seed: 17
+
+modules:
+  m1_linguistic:
+    component: StubLinguisticModule
+  m2_reference:
+    component: StubReferenceModule
+  m3_prosody:
+    component: StubProsodyModule
+  m4_guardrails:
+    component: StubGuardrailModule
+  m5_generator:
+    component: StubGeneratorModule
+  m6_vocoder:
+    component: StubVocoderModule

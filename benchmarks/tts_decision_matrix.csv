@@ -1,0 +1,12 @@
+provider_model,usd_per_1m_chars,languages,voice_cloning,latency_ttfa_ms,output_sr_hz,compliance_posture,source_url
+MAI-Voice-2,22,15 + code-switch,zero-shot all langs,real-time (vendor),24000,"consent guardrails built in; production only licensed voices",https://microsoft.ai/news/mai-voice-2
+OpenAI tts-1,15,~6,no,~2000 (HD),24000,OpenAI standard,https://openai.com/api/pricing/
+xAI Grok TTS,15,undisclosed,no (predefined),undisclosed,24000,xAI standard,https://docs.x.ai/developers/pricing
+Azure Neural,16,"140+",no (custom = paid tier),~150-250,24000,Azure standard,https://azure.microsoft.com/pricing/details/speech
+Amazon Polly Neural,16,60+,no (separate tier),~150-250,24000,AWS standard,https://aws.amazon.com/polly/pricing/
+OpenAI tts-1-hd,30,~6,no,slow,24000,OpenAI standard,https://openai.com/api/pricing/
+Google Chirp 3 HD,30,95+,no,~150-250,24000,Google standard,https://cloud.google.com/text-to-speech/pricing
+Deepgram Aura-2,30,7,no,sub-200 TTFB,24000,Deepgram standard,https://deepgram.com/pricing
+Gradium,~36,undisclosed,yes (~10s ref),155 P50,24000,Gradium standard,https://gradium.ai/content/tts-latency-benchmark-2026
+Cartesia Sonic-3,~50,40+,yes (3s ref),~90 (fastest),44100,startup-grade,https://cartesia.ai/sonic
+ElevenLabs v2/v3,100,32+,yes (leader),~375,44100,commercial licence required,https://elevenlabs.io/pricing/api
