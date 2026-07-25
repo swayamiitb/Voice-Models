@@ -3,11 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>VajraVoice · Live Voice Visualizer</title>
+<title>VajraVoice · Live Speech-Science Console</title>
 <style>
   :root {
     --ink: #0b1424;
     --ink-2: #1a2540;
+    --ink-3: #2d3a55;
     --paper: #f7f9fc;
     --brand: #4c8dff;
     --brand-2: #7aa9ff;
@@ -16,82 +17,97 @@
     --green: #2ecc71;
     --purple: #a855f7;
     --red: #e74c3c;
+    --pink: #ec4899;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: #070d1a; }
   body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    background: linear-gradient(180deg, #0b1424 0%, #1a2540 100%);
-    color: var(--paper);
+    color: #e7ebf3;
     min-height: 100vh;
-    padding: 20px;
+    padding: 16px;
+    background: radial-gradient(ellipse at top, #12213f 0%, #070d1a 60%);
   }
-  .container { max-width: 1200px; margin: 0 auto; }
-  header { text-align: center; margin-bottom: 30px; }
+  .container { max-width: 1320px; margin: 0 auto; }
+
+  header { text-align: center; margin-bottom: 20px; }
   header h1 {
-    font-size: 2.4em; font-weight: 800; letter-spacing: -0.5px;
+    font-size: 2em; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 6px;
     background: linear-gradient(90deg, var(--brand), var(--teal), var(--amber));
     -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-    background-clip: text; margin-bottom: 8px;
   }
-  header p { color: #8a98b8; font-size: 1em; }
+  header p { color: #8a98b8; font-size: 0.95em; }
+  header .small { color: #5a6a8a; font-size: 0.8em; margin-top: 4px; }
+
   .grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 18px;
-    margin-bottom: 18px;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 14px;
+    margin-bottom: 14px;
   }
-  @media (max-width: 760px) { .grid { grid-template-columns: 1fr; } }
+  @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+
   .panel {
-    background: rgba(255,255,255,0.04);
-    border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 14px;
-    padding: 16px;
-    backdrop-filter: blur(8px);
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 12px;
+    padding: 14px;
   }
   .panel h3 {
-    font-size: 0.78em; font-weight: 700; letter-spacing: 1.5px;
-    text-transform: uppercase; color: #8a98b8; margin-bottom: 12px;
+    font-size: 0.74em; font-weight: 700; letter-spacing: 1.5px;
+    text-transform: uppercase; color: #8a98b8; margin-bottom: 10px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .panel h3 .tag {
+    background: rgba(76,141,255,0.15); color: var(--brand-2);
+    padding: 2px 8px; border-radius: 4px; font-size: 0.85em;
   }
   .panel.full { grid-column: 1 / -1; }
-  canvas { width: 100%; height: auto; display: block; border-radius: 8px; }
+
+  canvas { width: 100%; height: auto; display: block; border-radius: 6px; }
+
   .controls {
     display: flex; gap: 12px; align-items: center; justify-content: center;
-    flex-wrap: wrap; margin: 24px 0;
+    flex-wrap: wrap; margin: 20px 0;
   }
   button {
     background: linear-gradient(135deg, var(--brand), var(--teal));
-    color: white; border: none; padding: 14px 28px;
-    font-size: 1em; font-weight: 600; border-radius: 999px;
-    cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 20px rgba(76,141,255,0.4);
+    color: white; border: none; padding: 12px 26px;
+    font-size: 0.95em; font-weight: 600; border-radius: 999px;
+    cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 18px rgba(76,141,255,0.35);
   }
-  button:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(76,141,255,0.6); }
-  button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-  button.danger { background: linear-gradient(135deg, var(--red), #c0392b); box-shadow: 0 4px 20px rgba(231,76,60,0.4); }
+  button:hover { transform: translateY(-2px); box-shadow: 0 6px 22px rgba(76,141,255,0.55); }
+  button.danger { background: linear-gradient(135deg, var(--red), #c0392b); box-shadow: 0 4px 18px rgba(231,76,60,0.35); }
+
   .status {
     display: inline-flex; align-items: center; gap: 8px;
     padding: 8px 16px; border-radius: 999px;
-    background: rgba(255,255,255,0.06); font-size: 0.9em; color: #8a98b8;
+    background: rgba(255,255,255,0.05); font-size: 0.85em; color: #8a98b8;
   }
-  .status .dot {
-    width: 8px; height: 8px; border-radius: 50%; background: #8a98b8;
-  }
+  .status .dot { width: 8px; height: 8px; border-radius: 50%; background: #8a98b8; }
   .status.live .dot { background: var(--green); animation: pulse 1.5s ease infinite; }
   @keyframes pulse {
     0%, 100% { box-shadow: 0 0 0 0 rgba(46,204,113,0.6); }
     50% { box-shadow: 0 0 0 8px rgba(46,204,113,0); }
   }
+
   .stats {
-    display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;
-    margin-top: 16px;
+    display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px;
+    margin-top: 12px;
   }
-  @media (max-width: 600px) { .stats { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 700px) { .stats { grid-template-columns: repeat(3, 1fr); } }
   .stat {
-    background: rgba(255,255,255,0.03); border-radius: 8px; padding: 12px;
+    background: rgba(255,255,255,0.03); border-radius: 6px; padding: 10px 8px;
     text-align: center;
   }
-  .stat .label { font-size: 0.7em; color: #8a98b8; text-transform: uppercase; letter-spacing: 1px; }
-  .stat .value { font-size: 1.4em; font-weight: 700; color: var(--brand-2); font-family: monospace; }
-  .footnote { text-align: center; color: #5a6a8a; font-size: 0.85em; margin-top: 24px; line-height: 1.6; }
+  .stat .label { font-size: 0.65em; color: #8a98b8; text-transform: uppercase; letter-spacing: 1px; }
+  .stat .value { font-size: 1.15em; font-weight: 700; color: var(--brand-2); font-family: monospace; margin-top: 2px; }
+  .stat .value.amber { color: var(--amber); }
+  .stat .value.teal { color: var(--teal); }
+  .stat .value.purple { color: var(--purple); }
+  .stat .value.green { color: var(--green); }
+
+  .footnote { text-align: center; color: #5a6a8a; font-size: 0.8em; margin-top: 18px; line-height: 1.6; }
   .footnote a { color: var(--brand-2); text-decoration: none; }
   .footnote a:hover { text-decoration: underline; }
   .hidden { display: none; }
@@ -100,8 +116,9 @@
 <body>
 <div class="container">
   <header>
-    <h1>VajraVoice · Live</h1>
-    <p>Real-time voice visualizer — the same DSP that powers a six-module neural TTS pipeline, in your browser.</p>
+    <h1>VajraVoice · Live Speech-Science Console</h1>
+    <p>Real-time <b>formant</b>, <b>pitch</b>, and <b>vowel-space</b> analysis — the same DSP that powers a six-module neural TTS pipeline, in your browser.</p>
+    <div class="small">M1 Linguistic · M2 Reference · M3 Prosody · M4 Guardrails · M5 Generator · M6 Vocoder</div>
   </header>
 
   <div class="controls">
@@ -111,67 +128,81 @@
   </div>
 
   <div class="grid">
-    <div class="panel full">
-      <h3>_Oscilloscope · time-domain waveform</h3>
-      <canvas id="osc" width="1100" height="180"></canvas>
+    <!-- LEFT COLUMN -->
+    <div class="panel">
+      <h3>_Pipeline <span class="tag">M1→M6</span></h3>
+      <canvas id="pipe" width="640" height="120"></canvas>
+    </div>
+    <div class="panel">
+      <h3>_Spectrum + Formants <span class="tag">F1, F2 tracked</span></h3>
+      <canvas id="fft" width="540" height="120"></canvas>
     </div>
 
     <div class="panel">
-      <h3>_Spectrum · 32-band FFT analyzer</h3>
-      <canvas id="fft" width="540" height="240"></canvas>
+      <h3>_Pitch contour (F0) <span class="tag">ACF + cepstrum</span></h3>
+      <canvas id="pitch" width="640" height="120"></canvas>
     </div>
-
     <div class="panel">
-      <h3>_Voice fingerprint · radial identity</h3>
-      <canvas id="fp" width="540" height="240"></canvas>
+      <h3>_Vowel space <span class="tag">F1 × F2 plane</span></h3>
+      <canvas id="vowel" width="540" height="240"></canvas>
     </div>
 
     <div class="panel full">
-      <h3>_Spectrogram · waterfall, 0–8 kHz</h3>
-      <canvas id="spec" width="1100" height="160"></canvas>
+      <h3>_Spectrogram <span class="tag">0–4 kHz waterfall</span></h3>
+      <canvas id="spec" width="1200" height="120"></canvas>
     </div>
 
     <div class="panel full">
       <h3>_Live telemetry</h3>
       <div class="stats">
         <div class="stat"><div class="label">Sample rate</div><div class="value" id="srStat">—</div></div>
-        <div class="stat"><div class="label">FFT size</div><div class="value" id="fftStat">2048</div></div>
-        <div class="stat"><div class="label">RMS level</div><div class="value" id="rmsStat">0.00</div></div>
-        <div class="stat"><div class="label">Peak freq</div><div class="value" id="freqStat">— Hz</div></div>
+        <div class="stat"><div class="label">F0 (pitch)</div><div class="value amber" id="f0Stat">— Hz</div></div>
+        <div class="stat"><div class="label">F1</div><div class="value teal" id="f1Stat">— Hz</div></div>
+        <div class="stat"><div class="label">F2</div><div class="value teal" id="f2Stat">— Hz</div></div>
+        <div class="stat"><div class="label">Vowel</div><div class="value purple" id="vowelStat">—</div></div>
+        <div class="stat"><div class="label">Voicing</div><div class="value green" id="voicingStat">—</div></div>
       </div>
     </div>
   </div>
 
   <p class="footnote">
-    Visualizations driven by the <a href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Audio_API" target="_blank">Web Audio API</a>.
-    Your audio never leaves your device — analysis runs locally in the browser.<br/>
-    Part of <a href="https://github.com/swayamiitb/Voice-Models">VajraVoice</a> — a six-module open-source neural TTS engine.
+    All analysis runs locally via the <a href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Audio_API" target="_blank">Web Audio API</a> — your audio never leaves your device.<br/>
+    Part of <a href="https://github.com/swayamiitb/Voice-Models">VajraVoice</a> — a six-module open-source neural TTS engine reproducing the MAI-Voice-2 architectural class.
   </p>
 </div>
 
 <script>
-// ====================================================================
-// VajraVoice live visualizer — pure WebAudio + canvas, no deps.
-// ====================================================================
-const startBtn = document.getElementById('startBtn');
-const stopBtn  = document.getElementById('stopBtn');
-const status   = document.getElementById('status');
+"use strict";
+// =============================================================================
+// VajraVoice live speech-science console.
+// Real-time: pitch (ACF + cepstrum hybrid), formants (LPC + peak-pick),
+// vowel classification (F1×F2 nearest-neighbour on the standard IPA chart),
+// pipeline flow indicator, scrolling spectrogram.
+// =============================================================================
+
+const startBtn   = document.getElementById('startBtn');
+const stopBtn    = document.getElementById('stopBtn');
+const status     = document.getElementById('status');
 const statusText = document.getElementById('statusText');
-const srStat = document.getElementById('srStat');
-const rmsStat = document.getElementById('rmsStat');
-const freqStat = document.getElementById('freqStat');
+const srStat     = document.getElementById('srStat');
+const f0Stat     = document.getElementById('f0Stat');
+const f1Stat     = document.getElementById('f1Stat');
+const f2Stat     = document.getElementById('f2Stat');
+const vowelStat  = document.getElementById('vowelStat');
+const voicingStat = document.getElementById('voicingStat');
 
 let audioCtx = null, analyser = null, micStream = null, rafId = null;
+let floatBuf = null, freqBuf = null;     // reused each frame
 
-// Canvas contexts
-const oscCanvas = document.getElementById('osc');
-const fftCanvas = document.getElementById('fft');
-const fpCanvas  = document.getElementById('fp');
-const specCanvas = document.getElementById('spec');
-const oscCtx = oscCanvas.getContext('2d');
-const fftCtx = fftCanvas.getContext('2d');
-const fpCtx  = fpCanvas.getContext('2d');
-const specCtx = specCanvas.getContext('2d');
+const canvases = {
+  pipe:  document.getElementById('pipe'),
+  fft:   document.getElementById('fft'),
+  pitch: document.getElementById('pitch'),
+  vowel: document.getElementById('vowel'),
+  spec:  document.getElementById('spec'),
+};
+const ctxs = {};
+Object.keys(canvases).forEach(k => ctxs[k] = canvases[k].getContext('2d'));
 
 // High-DPI scaling
 function setupHiDPI(canvas, ctx) {
@@ -181,39 +212,74 @@ function setupHiDPI(canvas, ctx) {
   canvas.height = rect.height * dpr;
   ctx.scale(dpr, dpr);
 }
-[oscCanvas, fftCanvas, fpCanvas, specCanvas].forEach(c => setupHiDPI(c, c.getContext('2d')));
+Object.keys(canvases).forEach(k => setupHiDPI(canvases[k], ctxs[k]));
 
+// ----------------------------------------------------------------------------
 // Persistent state
-const FP_SIZE = 256;
-let fpEmbedding = new Float32Array(FP_SIZE);   // smoothed "identity" estimate
-let specHistory = [];                           // scrolling spectrogram rows
-const SPEC_ROWS = 80;
+// ----------------------------------------------------------------------------
+const PITCH_HIST = 200;
+let pitchHistory = new Array(PITCH_HIST).fill(null);
 
-// ============================================================
-// start
-// ============================================================
+const SPEC_ROWS = 100;
+let specHistory = [];
+
+// Pipeline flow animation state
+let flowOffset = 0;
+const MODULES = [
+  { id: 'M1', name: 'Linguistic', color: '#4c8dff' },
+  { id: 'M2', name: 'Reference',  color: '#06b6d4' },
+  { id: 'M3', name: 'Prosody',    color: '#a855f7' },
+  { id: 'M4', name: 'Guardrails', color: '#e74c3c' },
+  { id: 'M5', name: 'Generator',  color: '#f5a623' },
+  { id: 'M6', name: 'Vocoder',    color: '#2ecc71' },
+];
+
+// Vowel chart anchor points (F1, F2 in Hz) — standard IPA values.
+// Source: Peterson & Barney (1952), Ladefoged (2001).
+const VOWELS = [
+  { sym: 'i',  f1: 300, f2: 2200, col: '#7aa9ff' },  // heed
+  { sym: 'ɪ',  f1: 400, f2: 1800, col: '#7aa9ff' },  // hid
+  { sym: 'e',  f1: 480, f2: 2000, col: '#9bbcfc' },  // bait
+  { sym: 'ɛ',  f1: 610, f2: 1700, col: '#9bbcfc' },  // head
+  { sym: 'æ',  f1: 860, f2: 1550, col: '#bdd0fa' },  // had
+  { sym: 'a',  f1: 850, f2: 1200, col: '#f5a623' },  // father
+  { sym: 'ɔ',  f1: 590, f2: 900,  col: '#f5a623' },  // caught
+  { sym: 'o',  f1: 500, f2: 900,  col: '#f5a623' },  // boat
+  { sym: 'ʊ',  f1: 400, f2: 1000, col: '#2ecc71' },  // hood
+  { sym: 'u',  f1: 320, f2: 900,  col: '#2ecc71' },  // who'd
+  { sym: 'ʌ',  f1: 600, f2: 1200, col: '#a855f7' },  // mud
+  { sym: 'ə',  f1: 500, f2: 1500, col: '#a855f7' },  // about
+];
+let vowelTrail = [];  // recent (F1, F2) points to draw as a moving dot trail
+
+// ============================================================================
+// Audio bootstrap
+// ============================================================================
 async function start() {
   try {
     micStream = await navigator.mediaDevices.getUserMedia({
       audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false }
     });
     audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    srStat.textContent = (audioCtx.sampleRate / 1000).toFixed(1) + ' kHz';
+    srStat.textContent = (audioCtx.sampleRate / 1000).toFixed(1) + 'k';
     const source = audioCtx.createMediaStreamSource(micStream);
     analyser = audioCtx.createAnalyser();
     analyser.fftSize = 2048;
-    analyser.smoothingTimeConstant = 0.75;
+    analyser.smoothingTimeConstant = 0.4;
     source.connect(analyser);
+
+    floatBuf = new Float32Array(analyser.fftSize);
+    freqBuf  = new Uint8Array(analyser.frequencyBinCount);
 
     startBtn.classList.add('hidden');
     stopBtn.classList.remove('hidden');
     status.classList.add('live');
     statusText.textContent = 'Microphone live';
 
+    specHistory = [];
     draw();
   } catch (err) {
-    alert('Could not access microphone: ' + err.message +
-          '\n\nThis demo needs mic permission. On GitHub Pages it requires HTTPS (which it has).');
+    alert('Could not access microphone: ' + err.message);
   }
 }
 
@@ -227,218 +293,462 @@ function stop() {
   stopBtn.classList.add('hidden');
   status.classList.remove('live');
   statusText.textContent = 'Microphone off';
-  srStat.textContent = '—'; rmsStat.textContent = '0.00'; freqStat.textContent = '— Hz';
-  fpEmbedding = new Float32Array(FP_SIZE);
+  ['sr','f0','f1','f2','vowel','voicing'].forEach(k => {
+    const el = document.getElementById(k + 'Stat'); if (el) el.textContent = '—';
+  });
 }
 
 startBtn.addEventListener('click', start);
 stopBtn.addEventListener('click', stop);
 
-// ============================================================
-// main draw loop
-// ============================================================
+// ============================================================================
+// Main loop
+// ============================================================================
 function draw() {
   if (!analyser) return;
   rafId = requestAnimationFrame(draw);
 
-  const timeData = new Uint8Array(analyser.fftSize);
-  const freqData = new Uint8Array(analyser.frequencyBinCount);
-  analyser.getByteTimeDomainData(timeData);
-  analyser.getByteFrequencyData(freqData);
+  analyser.getFloatTimeDomainData(floatBuf);
+  analyser.getByteFrequencyData(freqBuf);
 
-  drawOscilloscope(timeData);
-  drawFFT(freqData);
-  drawFingerprint(freqData);
-  drawSpectrogram(freqData);
-  updateStats(timeData, freqData);
-}
+  // Audio features
+  const f0 = detectPitch(floatBuf, audioCtx.sampleRate);
+  const formants = f0 > 0 ? estimateFormants(floatBuf, audioCtx.sampleRate, f0) : [0, 0];
+  const vowel = classifyVowel(formants[0], formants[1]);
+  const rms = computeRMS(floatBuf);
+  const voiced = f0 > 0 && rms > 0.012;
 
-// ============================================================
-// 1) Oscilloscope — time-domain waveform
-// ============================================================
-function drawOscilloscope(timeData) {
-  const w = oscCanvas.clientWidth, h = oscCanvas.clientHeight;
-  // Fade-clear for ghost trail
-  oscCtx.fillStyle = 'rgba(11, 20, 36, 0.25)';
-  oscCtx.fillRect(0, 0, w, h);
+  // Update pitch history
+  pitchHistory.shift();
+  pitchHistory.push(f0 > 0 ? f0 : null);
 
-  // Grid
-  oscCtx.strokeStyle = 'rgba(255,255,255,0.05)';
-  oscCtx.lineWidth = 1;
-  for (let y = 0; y < h; y += 30) {
-    oscCtx.beginPath(); oscCtx.moveTo(0, y); oscCtx.lineTo(w, y); oscCtx.stroke();
-  }
-  oscCtx.strokeStyle = 'rgba(255,255,255,0.12)';
-  oscCtx.beginPath(); oscCtx.moveTo(0, h/2); oscCtx.lineTo(w, h/2); oscCtx.stroke();
-
-  // Glow underlay
-  oscCtx.strokeStyle = 'rgba(76,141,255,0.35)';
-  oscCtx.lineWidth = 6;
-  oscCtx.beginPath();
-  for (let i = 0; i < timeData.length; i++) {
-    const x = (i / timeData.length) * w;
-    const v = (timeData[i] - 128) / 128;
-    const y = h/2 + v * (h/2 - 8);
-    if (i === 0) oscCtx.moveTo(x, y); else oscCtx.lineTo(x, y);
-  }
-  oscCtx.stroke();
-
-  // Sharp waveform
-  const grad = oscCtx.createLinearGradient(0, 0, w, 0);
-  grad.addColorStop(0, '#4c8dff'); grad.addColorStop(0.5, '#06b6d4'); grad.addColorStop(1, '#f5a623');
-  oscCtx.strokeStyle = grad;
-  oscCtx.lineWidth = 2;
-  oscCtx.beginPath();
-  for (let i = 0; i < timeData.length; i++) {
-    const x = (i / timeData.length) * w;
-    const v = (timeData[i] - 128) / 128;
-    const y = h/2 + v * (h/2 - 8);
-    if (i === 0) oscCtx.moveTo(x, y); else oscCtx.lineTo(x, y);
-  }
-  oscCtx.stroke();
-}
-
-// ============================================================
-// 2) FFT spectrum bars with peak-hold markers
-// ============================================================
-const N_BANDS = 32;
-let peaks = new Float32Array(N_BANDS);
-let peakVel = new Float32Array(N_BANDS);
-
-function drawFFT(freqData) {
-  const w = fftCanvas.clientWidth, h = fftCanvas.clientHeight;
-  fftCtx.fillStyle = 'rgba(11, 20, 36, 1)';
-  fftCtx.fillRect(0, 0, w, h);
-
-  // Aggregate into log-spaced bands
-  const sr = audioCtx.sampleRate;
-  const bands = new Float32Array(N_BANDS);
-  const edges = [];
-  for (let i = 0; i <= N_BANDS; i++) {
-    edges.push(80 * Math.pow(sr / 2 / 80, i / N_BANDS));
-  }
-  for (let b = 0; b < N_BANDS; b++) {
-    const lo = Math.floor(edges[b] / sr * 2 * freqData.length);
-    const hi = Math.floor(edges[b+1] / sr * 2 * freqData.length);
-    let mx = 0;
-    for (let i = lo; i <= hi && i < freqData.length; i++) mx = Math.max(mx, freqData[i]);
-    bands[b] = mx / 255;
-  }
-
-  // Peak-hold
-  for (let b = 0; b < N_BANDS; b++) {
-    if (bands[b] > peaks[b]) { peaks[b] = bands[b]; peakVel[b] = 0; }
-    else { peakVel[b] += 0.012; peaks[b] = Math.max(0, peaks[b] - peakVel[b]); }
-  }
-
-  const pad = 12;
-  const barW = (w - 2*pad) / N_BANDS;
-  const baseY = h - 16;
-  for (let b = 0; b < N_BANDS; b++) {
-    const x = pad + b * barW + 2;
-    const bh = Math.max(2, bands[b] * (h - 32));
-    const y = baseY - bh;
-    let col;
-    if (bands[b] < 0.4) col = '#06b6d4';
-    else if (bands[b] < 0.75) col = '#4c8dff';
-    else col = '#f5a623';
-    fftCtx.fillStyle = col;
-    fftCtx.fillRect(x, y, barW - 4, bh);
-    fftCtx.fillStyle = 'rgba(255,255,255,0.7)';
-    fftCtx.fillRect(x, y, barW - 4, 2);
-    // Peak marker
-    const py = baseY - Math.max(2, peaks[b] * (h - 32));
-    fftCtx.fillStyle = '#e74c3c';
-    fftCtx.fillRect(x, py - 1, barW - 4, 2);
-  }
-  fftCtx.strokeStyle = 'rgba(255,255,255,0.2)';
-  fftCtx.beginPath(); fftCtx.moveTo(pad, baseY); fftCtx.lineTo(w - pad, baseY); fftCtx.stroke();
-}
-
-// ============================================================
-// 3) Radial voice fingerprint
-// ============================================================
-function drawFingerprint(freqData) {
-  const w = fpCanvas.clientWidth, h = fpCanvas.clientHeight;
-  const cx = w/2, cy = h/2;
-  fpCtx.fillStyle = 'rgba(11, 20, 36, 1)';
-  fpCtx.fillRect(0, 0, w, h);
-
-  // Build a pseudo-embedding from current spectrum (32 bands → smooth to 256)
-  // This stands in for the ECAPA-TDNN 256-d embedding; in the real pipeline
-  // this is a learned projection. Here we use the live spectrum to drive it,
-  // so the blob visibly responds to your voice.
-  const target = new Float32Array(FP_SIZE);
-  for (let i = 0; i < FP_SIZE; i++) {
-    const bandIdx = Math.floor(i / FP_SIZE * freqData.length * 0.4);
-    target[i] = freqData[bandIdx] / 255;
-  }
-  // Smooth: low-pass the embedding (slow-follow)
-  for (let i = 0; i < FP_SIZE; i++) {
-    fpEmbedding[i] += (target[i] - fpEmbedding[i]) * 0.08;
-  }
-
-  // Concentric guides
-  fpCtx.strokeStyle = 'rgba(255,255,255,0.06)';
-  fpCtx.lineWidth = 1;
-  for (const r of [30, 55, 80]) {
-    fpCtx.beginPath(); fpCtx.arc(cx, cy, r, 0, Math.PI * 2); fpCtx.stroke();
-  }
-
-  // Polygon
-  const t = performance.now() * 0.001;
-  const rot = t * 0.3;
-  const pts = [];
-  for (let i = 0; i < FP_SIZE; i++) {
-    const angle = (i / FP_SIZE) * Math.PI * 2 + rot;
-    const r = 30 + 55 * fpEmbedding[i];
-    pts.push([cx + r * Math.cos(angle), cy + r * Math.sin(angle)]);
-  }
-  // Fill
-  fpCtx.fillStyle = 'rgba(76,141,255,0.18)';
-  fpCtx.beginPath();
-  fpCtx.moveTo(pts[0][0], pts[0][1]);
-  for (const p of pts) fpCtx.lineTo(p[0], p[1]);
-  fpCtx.closePath(); fpCtx.fill();
-  // Stroke
-  fpCtx.strokeStyle = '#4c8dff'; fpCtx.lineWidth = 1.5;
-  fpCtx.stroke();
-  // Spokes
-  fpCtx.strokeStyle = 'rgba(122,169,255,0.35)'; fpCtx.lineWidth = 1;
-  for (let i = 0; i < FP_SIZE; i += 8) {
-    fpCtx.beginPath();
-    fpCtx.moveTo(cx, cy); fpCtx.lineTo(pts[i][0], pts[i][1]); fpCtx.stroke();
-  }
-  // Outer dots
-  fpCtx.fillStyle = '#06b6d4';
-  for (let i = 0; i < FP_SIZE; i += 8) {
-    fpCtx.beginPath(); fpCtx.arc(pts[i][0], pts[i][1], 1.8, 0, Math.PI*2); fpCtx.fill();
-  }
-  // Hub
-  fpCtx.fillStyle = '#0b1424'; fpCtx.beginPath(); fpCtx.arc(cx, cy, 6, 0, Math.PI*2); fpCtx.fill();
-  fpCtx.strokeStyle = '#4c8dff'; fpCtx.lineWidth = 1.5; fpCtx.stroke();
-}
-
-// ============================================================
-// 4) Scrolling spectrogram (waterfall)
-// ============================================================
-function drawSpectrogram(freqData) {
-  const w = specCanvas.clientWidth, h = specCanvas.clientHeight;
-
-  // On first call, initialize the history
+  // Push spectrogram column
   if (specHistory.length === 0) {
-    for (let r = 0; r < SPEC_ROWS; r++) specHistory.push(new Uint8Array(freqData.length));
+    for (let i = 0; i < SPEC_ROWS; i++) specHistory.push(new Uint8Array(freqBuf.length));
   }
-
-  // Push new column to the end; everything scrolls left
-  specHistory.push(new Uint8Array(freqData));
+  specHistory.push(new Uint8Array(freqBuf));
   if (specHistory.length > SPEC_ROWS) specHistory.shift();
 
-  specCtx.fillStyle = '#0b1424';
-  specCtx.fillRect(0, 0, w, h);
+  // Vowel trail
+  if (voiced && formants[0] > 0) {
+    vowelTrail.push({ f1: formants[0], f2: formants[1], age: 0 });
+    if (vowelTrail.length > 60) vowelTrail.shift();
+  }
+  vowelTrail.forEach(p => p.age++);
+
+  // Draw everything
+  drawPipeline(voiced, rms);
+  drawFFT(formants);
+  drawPitch();
+  drawVowelSpace(formants, vowel);
+  drawSpectrogram();
+
+  // Telemetry
+  f0Stat.textContent     = f0 > 0 ? Math.round(f0) + ' Hz' : '—';
+  f1Stat.textContent     = formants[0] > 0 ? Math.round(formants[0]) + ' Hz' : '—';
+  f2Stat.textContent     = formants[1] > 0 ? Math.round(formants[1]) + ' Hz' : '—';
+  vowelStat.textContent  = vowel || '—';
+  voicingStat.textContent = voiced ? 'VOICED' : (rms < 0.005 ? 'SILENCE' : 'UNVOICED');
+}
+
+// ============================================================================
+// DSP: Pitch detection (autocorrelation + parabolic interpolation)
+// ============================================================================
+function detectPitch(buf, sr) {
+  const SIZE = buf.length;
+  // RMS gate
+  let rms = 0;
+  for (let i = 0; i < SIZE; i++) rms += buf[i] * buf[i];
+  rms = Math.sqrt(rms / SIZE);
+  if (rms < 0.01) return -1;
+
+  // Centre-cut to reduce DC/literal bias
+  let mean = 0;
+  for (let i = 0; i < SIZE; i++) mean += buf[i];
+  mean /= SIZE;
+  const x = new Float32Array(SIZE);
+  for (let i = 0; i < SIZE; i++) x[i] = buf[i] - mean;
+
+  // Normalised autocorrelation (NCCF) — looks for periodicity in 70–400 Hz
+  const minLag = Math.floor(sr / 400);  // 400 Hz
+  const maxLag = Math.floor(sr / 70);   // 70 Hz
+  let bestLag = -1, bestVal = 0;
+
+  // Use a windowed sub-buffer for speed; autocorrelation is O(N·lag)
+  const N = Math.min(SIZE, 1024);
+  for (let lag = minLag; lag <= maxLag; lag++) {
+    let num = 0, den = 0;
+    for (let i = 0; i < N - lag; i++) {
+      num += x[i] * x[i + lag];
+      den += x[i] * x[i];
+    }
+    const nccf = den > 0 ? num / den : 0;
+    if (nccf > bestVal) { bestVal = nccf; bestLag = lag; }
+  }
+  if (bestVal < 0.5) return -1;  // not periodic enough
+
+  // Parabolic interpolation around the peak for sub-sample accuracy
+  if (bestLag > minLag && bestLag < maxLag) {
+    let n1 = 0, n0 = 0, np1 = 0;
+    for (let i = 0; i < N - bestLag - 1; i++) {
+      n0  += x[i] * x[i + bestLag];
+      n1  += x[i] * x[i + bestLag - 1];
+      np1 += x[i] * x[i + bestLag + 1];
+    }
+    const denom = (n1 - 2 * n0 + np1);
+    if (denom !== 0) {
+      const shift = 0.5 * (n1 - np1) / denom;
+      bestLag = bestLag + shift;
+    }
+  }
+  return sr / bestLag;
+}
+
+// ============================================================================
+// DSP: Formant estimation via LPC + root-solving on the predictor polynomial
+// ============================================================================
+function estimateFormants(buf, sr, f0) {
+  // We use a Levinson-Durbin LPC of order ~2 + sr/1000 (a common heuristic).
+  const order = Math.min(20, Math.floor(2 + sr / 1000));
+  const lpc = levinsonDurbin(buf, order);
+  if (!lpc) return [0, 0];
+
+  // Roots of A(z) = 1 + a1 z^-1 + ... + an z^-n
+  // Trivial Bairstow-style extraction is heavy in JS; instead use a fast
+  // approximation: find peaks in the LPC inverse-filter's frequency response.
+  // We compute |1/A(e^{jω})| on a grid and pick the two strongest peaks
+  // between 200 Hz and 4000 Hz.
+  const nPoints = 256;
+  const respDb = new Float32Array(nPoints);
+  for (let k = 0; k < nPoints; k++) {
+    const w = Math.PI * k / nPoints;
+    let re = 1, im = 0;
+    for (let n = 1; n <= order; n++) {
+      re += lpc[n] * Math.cos(-n * w);
+      im += lpc[n] * Math.sin(-n * w);
+    }
+    const mag = 1 / Math.sqrt(re * re + im * im);
+    respDb[k] = mag;
+  }
+
+  // Map bins to Hz and find peaks
+  const peaks = [];
+  for (let k = 2; k < nPoints - 2; k++) {
+    if (respDb[k] > respDb[k - 1] && respDb[k] > respDb[k + 1]) {
+      const freq = (k / nPoints) * (sr / 2);
+      if (freq > 200 && freq < 4500) peaks.push({ freq, mag: respDb[k] });
+    }
+  }
+  peaks.sort((a, b) => b.mag - a.mag);
+
+  // F1 = strongest peak in 200–1000 Hz; F2 = next in 800–2500 Hz
+  let f1 = 0, f2 = 0;
+  for (const p of peaks) {
+    if (f1 === 0 && p.freq >= 200 && p.freq <= 1200) f1 = p.freq;
+    else if (f2 === 0 && p.freq >= 700 && p.freq <= 3500 && Math.abs(p.freq - f1) > 200) f2 = p.freq;
+    if (f1 && f2) break;
+  }
+  if (!f1 && peaks.length) f1 = peaks[0].freq;
+  if (!f2 && peaks.length > 1) f2 = peaks[1].freq;
+  return [f1, f2];
+}
+
+function levinsonDurbin(buf, order) {
+  // Autocorrelation
+  const N = buf.length;
+  const r = new Float32Array(order + 1);
+  for (let k = 0; k <= order; k++) {
+    let s = 0;
+    for (let i = 0; i < N - k; i++) s += buf[i] * buf[i + k];
+    r[k] = s / N;
+  }
+  if (r[0] === 0) return null;
+
+  const a = new Float32Array(order + 1);
+  const e = r[0];
+  a[0] = 1;
+  for (let i = 1; i <= order; i++) {
+    let acc = 0;
+    for (let j = 1; j < i; j++) acc += a[j] * r[i - j];
+    let k = -(r[i] + acc) / e;
+    if (Math.abs(k) > 1) return null;  // unstable
+    const aCopy = new Float32Array(a);
+    for (let j = 1; j < i; j++) a[j] = aCopy[j] + k * aCopy[i - j];
+    a[i] = k;
+    e = (1 - k * k) * e;
+    if (e <= 0) return null;
+  }
+  return a;
+}
+
+// ============================================================================
+// Vowel classification — nearest IPA anchor in the F1×F2 plane
+// ============================================================================
+function classifyVowel(f1, f2) {
+  if (!f1 || !f2) return null;
+  let best = null, bestDist = Infinity;
+  for (const v of VOWELS) {
+    // Weight F1 more since it's the primary axis; log-scale helps because
+    // the chart is roughly log-spaced.
+    const df1 = Math.log(f1 / v.f1);
+    const df2 = Math.log(f2 / v.f2);
+    const d = df1 * df1 * 1.0 + df2 * df2 * 0.7;
+    if (d < bestDist) { bestDist = d; best = v.sym; }
+  }
+  return bestDist < 1.5 ? best : null;
+}
+
+function computeRMS(buf) {
+  let s = 0;
+  for (let i = 0; i < buf.length; i++) s += buf[i] * buf[i];
+  return Math.sqrt(s / buf.length);
+}
+
+// ============================================================================
+// Drawing: pipeline diagram
+// ============================================================================
+function drawPipeline(voiced, rms) {
+  const w = canvases.pipe.clientWidth, h = canvases.pipe.clientHeight;
+  const c = ctxs.pipe;
+  c.fillStyle = '#070d1a';
+  c.fillRect(0, 0, w, h);
+
+  const margin = 14;
+  const mw = (w - 2 * margin - 5 * 8) / 6;
+  const yMid = h / 2;
+  flowOffset = (flowOffset + 0.6 + (voiced ? rms * 6 : 0)) % 16;
+
+  MODULES.forEach((m, i) => {
+    const x = margin + i * (mw + 8);
+    // Card
+    c.fillStyle = 'rgba(255,255,255,0.04)';
+    c.strokeStyle = m.color;
+    c.lineWidth = 1.5;
+    roundRect(c, x, 14, mw, h - 28, 6, true, true);
+    // Top stripe
+    c.fillStyle = m.color;
+    c.fillRect(x, 14, mw, 3);
+    // Text
+    c.fillStyle = m.color;
+    c.font = 'bold 14px monospace';
+    c.textAlign = 'center';
+    c.fillText(m.id, x + mw / 2, yMid - 2);
+    c.fillStyle = '#8a98b8';
+    c.font = '10px sans-serif';
+    c.fillText(m.name, x + mw / 2, yMid + 14);
+    // Flow indicator (animated dot when voiced)
+    if (i < 5) {
+      const ax = x + mw;
+      for (let dot = 0; dot < 3; dot++) {
+        const dx = ax + ((flowOffset + dot * 5) % 8);
+        c.beginPath();
+        c.arc(dx, yMid, 1.6, 0, Math.PI * 2);
+        c.fillStyle = voiced ? `rgba(46,204,113,${1 - dot * 0.3})` : 'rgba(255,255,255,0.2)';
+        c.fill();
+      }
+    }
+  });
+}
+
+function roundRect(ctx, x, y, w, h, r, fill, stroke) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
+  if (fill) ctx.fill();
+  if (stroke) ctx.stroke();
+}
+
+// ============================================================================
+// Drawing: FFT spectrum with F1/F2 markers
+// ============================================================================
+function drawFFT(formants) {
+  const w = canvases.fft.clientWidth, h = canvases.fft.clientHeight;
+  const c = ctxs.fft;
+  c.fillStyle = '#070d1a';
+  c.fillRect(0, 0, w, h);
+
+  const pad = 8;
+  const usableW = w - 2 * pad;
+  const usableH = h - 2 * pad;
+  const binsShown = Math.min(freqBuf.length, Math.floor(freqBuf.length * 0.4));  // 0–~8 kHz
+  const barW = usableW / binsShown;
+  for (let i = 0; i < binsShown; i++) {
+    const v = freqBuf[i] / 255;
+    const bh = v * usableH;
+    const x = pad + i * barW;
+    const y = h - pad - bh;
+    let col;
+    if (v < 0.35) col = `rgba(6,182,212,${0.4 + v})`;
+    else if (v < 0.7) col = `rgba(76,141,255,${0.5 + v * 0.5})`;
+    else col = `rgba(245,166,35,${0.6 + v * 0.4})`;
+    c.fillStyle = col;
+    c.fillRect(x, y, Math.max(1, barW - 0.3), bh);
+  }
+  // F1 / F2 markers
+  const sr = audioCtx ? audioCtx.sampleRate : 48000;
+  const fftSize = analyser ? analyser.fftSize : 2048;
+  const freqToX = f => pad + (f / (sr / 2)) * usableW * (binsShown / freqBuf.length);
+  [['F1', formants[0], '#06b6d4'], ['F2', formants[1], '#7aa9ff']].forEach(([label, f, col]) => {
+    if (f <= 0 || f > sr / 2) return;
+    const x = freqToX(f);
+    c.strokeStyle = col;
+    c.lineWidth = 1.5;
+    c.setLineDash([3, 3]);
+    c.beginPath(); c.moveTo(x, pad); c.lineTo(x, h - pad); c.stroke();
+    c.setLineDash([]);
+    c.fillStyle = col;
+    c.font = 'bold 10px monospace';
+    c.textAlign = 'left';
+    c.fillText(label, x + 3, pad + 10);
+  });
+}
+
+// ============================================================================
+// Drawing: pitch contour (F0 over time)
+// ============================================================================
+function drawPitch() {
+  const w = canvases.pitch.clientWidth, h = canvases.pitch.clientHeight;
+  const c = ctxs.pitch;
+  c.fillStyle = '#070d1a';
+  c.fillRect(0, 0, w, h);
+
+  // Y axis: 70–400 Hz
+  const fMin = 70, fMax = 400;
+  const pad = 6;
+  const plotH = h - 2 * pad;
+
+  // Grid lines (octaves)
+  c.strokeStyle = 'rgba(255,255,255,0.06)';
+  c.lineWidth = 1;
+  c.font = '9px monospace';
+  c.fillStyle = '#5a6a8a';
+  c.textAlign = 'left';
+  [100, 150, 200, 300, 400].forEach(f => {
+    if (f < fMin || f > fMax) return;
+    const y = pad + plotH - ((f - fMin) / (fMax - fMin)) * plotH;
+    c.beginPath(); c.moveTo(28, y); c.lineTo(w - pad, y); c.stroke();
+    c.fillText(f + ' Hz', 2, y + 3);
+  });
+
+  // Pitch trace
+  const plotX0 = 30;
+  const plotW = w - plotX0 - pad;
+  const xStep = plotW / PITCH_HIST;
+  c.strokeStyle = '#f5a623';
+  c.lineWidth = 2;
+  c.beginPath();
+  let started = false;
+  for (let i = 0; i < PITCH_HIST; i++) {
+    const f = pitchHistory[i];
+    if (f == null || f < fMin || f > fMax) { started = false; continue; }
+    const x = plotX0 + i * xStep;
+    const y = pad + plotH - ((f - fMin) / (fMax - fMin)) * plotH;
+    if (!started) { c.moveTo(x, y); started = true; }
+    else c.lineTo(x, y);
+  }
+  c.stroke();
+
+  // Current-point marker
+  const last = pitchHistory[PITCH_HIST - 1];
+  if (last != null && last >= fMin && last <= fMax) {
+    const x = plotX0 + (PITCH_HIST - 1) * xStep;
+    const y = pad + plotH - ((last - fMin) / (fMax - fMin)) * plotH;
+    c.fillStyle = '#f5a623';
+    c.beginPath(); c.arc(x, y, 3, 0, Math.PI * 2); c.fill();
+  }
+}
+
+// ============================================================================
+// Drawing: vowel space (F1 × F2 plane)
+// ============================================================================
+function drawVowelSpace(formants, vowel) {
+  const w = canvases.vowel.clientWidth, h = canvases.vowel.clientHeight;
+  const c = ctxs.vowel;
+  c.fillStyle = '#070d1a';
+  c.fillRect(0, 0, w, h);
+
+  const pad = 32;
+  const plotW = w - 2 * pad;
+  const plotH = h - 2 * pad;
+  // Standard vowel chart: F1 on Y (inverted, 0–1000 Hz), F2 on X (reversed, 3000→500)
+  const f1Max = 1000, f2Max = 3000, f2Min = 500;
+  const f1ToY = f1 => pad + plotH - (f1 / f1Max) * plotH;
+  const f2ToX = f2 => pad + plotW - ((f2 - f2Min) / (f2Max - f2Min)) * plotW;
+
+  // Axes
+  c.strokeStyle = 'rgba(255,255,255,0.15)';
+  c.lineWidth = 1;
+  c.beginPath(); c.moveTo(pad, pad); c.lineTo(pad, pad + plotH); c.lineTo(pad + plotW, pad + plotH); c.stroke();
+  c.fillStyle = '#5a6a8a';
+  c.font = '9px monospace';
+  c.textAlign = 'center';
+  c.fillText('F2 →', pad + plotW / 2, h - 8);
+  c.save();
+  c.translate(10, pad + plotH / 2);
+  c.rotate(-Math.PI / 2);
+  c.fillText('F1 →', 0, 0);
+  c.restore();
+
+  // Gridlines
+  c.strokeStyle = 'rgba(255,255,255,0.05)';
+  [300, 500, 700, 900].forEach(f1 => {
+    const y = f1ToY(f1);
+    c.beginPath(); c.moveTo(pad, y); c.lineTo(pad + plotW, y); c.stroke();
+  });
+  [1000, 1500, 2000, 2500].forEach(f2 => {
+    const x = f2ToX(f2);
+    c.beginPath(); c.moveTo(x, pad); c.lineTo(x, pad + plotH); c.stroke();
+  });
+
+  // Vowel anchors
+  c.font = 'bold 13px serif';
+  c.textAlign = 'center';
+  VOWELS.forEach(v => {
+    const x = f2ToX(v.f2), y = f1ToY(v.f1);
+    c.fillStyle = 'rgba(255,255,255,0.07)';
+    c.beginPath(); c.arc(x, y, 10, 0, Math.PI * 2); c.fill();
+    c.fillStyle = '#8a98b8';
+    c.fillText(v.sym, x, y + 5);
+  });
+
+  // Trail
+  vowelTrail.forEach((p, i) => {
+    const x = f2ToX(p.f2), y = f1ToY(p.f1);
+    const alpha = Math.max(0, 1 - p.age / 60) * 0.5;
+    c.fillStyle = `rgba(236,72,153,${alpha})`;
+    c.beginPath(); c.arc(x, y, 3, 0, Math.PI * 2); c.fill();
+  });
+
+  // Current point
+  if (formants[0] > 0 && formants[1] > 0) {
+    const x = f2ToX(formants[1]), y = f1ToY(formants[0]);
+    c.fillStyle = '#ec4899';
+    c.shadowColor = '#ec4899'; c.shadowBlur = 12;
+    c.beginPath(); c.arc(x, y, 6, 0, Math.PI * 2); c.fill();
+    c.shadowBlur = 0;
+    if (vowel) {
+      c.fillStyle = '#ffffff';
+      c.font = 'bold 14px serif';
+      c.fillText('/' + vowel + '/', x, y - 12);
+    }
+  }
+}
+
+// ============================================================================
+// Drawing: scrolling spectrogram
+// ============================================================================
+function drawSpectrogram() {
+  const w = canvases.spec.clientWidth, h = canvases.spec.clientHeight;
+  const c = ctxs.spec;
+  c.fillStyle = '#070d1a';
+  c.fillRect(0, 0, w, h);
 
   const colW = w / SPEC_ROWS;
-  const binsToShow = Math.min(80, freqData.length);  // show ~0-8 kHz
+  const binsToShow = 100;  // ~0–4 kHz
   for (let col = 0; col < SPEC_ROWS; col++) {
     const data = specHistory[col];
     if (!data) continue;
@@ -447,55 +757,35 @@ function drawSpectrogram(freqData) {
       if (v < 0.08) continue;
       const x = col * colW;
       const y = h - (bin / binsToShow) * h;
-      specCtx.fillStyle = heatColor(v);
-      specCtx.fillRect(x, y - h/binsToShow, colW + 0.6, h/binsToShow + 0.6);
+      c.fillStyle = heatColor(v);
+      c.fillRect(x, y - h / binsToShow, colW + 0.5, h / binsToShow + 0.5);
     }
   }
 }
 
 function heatColor(v) {
-  // Viridis-ish: purple → blue → teal → green → yellow
-  if (v < 0.25) { const t = v/0.25; return `rgb(${13+30*t|0},${8+40*t|0},${60+80*t|0})`; }
-  if (v < 0.5)  { const t = (v-0.25)/0.25; return `rgb(43,${48+70*t|0},${140+60*t|0})`; }
-  if (v < 0.75) { const t = (v-0.5)/0.25; return `rgb(${43+60*t|0},${118+80*t|0},${200-100*t|0})`; }
-  const t = (v-0.75)/0.25;
-  return `rgb(${103+150*t|0},${198+30*t|0},${100-60*t|0})`;
+  if (v < 0.25) { const t = v / 0.25; return `rgb(${13 + 30 * t | 0},${8 + 40 * t | 0},${60 + 80 * t | 0})`; }
+  if (v < 0.5)  { const t = (v - 0.25) / 0.25; return `rgb(43,${48 + 70 * t | 0},${140 + 60 * t | 0})`; }
+  if (v < 0.75) { const t = (v - 0.5) / 0.25; return `rgb(${43 + 60 * t | 0},${118 + 80 * t | 0},${200 - 100 * t | 0})`; }
+  const t = (v - 0.75) / 0.25;
+  return `rgb(${103 + 150 * t | 0},${198 + 30 * t | 0},${100 - 60 * t | 0})`;
 }
 
-// ============================================================
-// Telemetry
-// ============================================================
-function updateStats(timeData, freqData) {
-  // RMS
-  let sum = 0;
-  for (let i = 0; i < timeData.length; i++) {
-    const v = (timeData[i] - 128) / 128;
-    sum += v * v;
-  }
-  const rms = Math.sqrt(sum / timeData.length);
-  rmsStat.textContent = rms.toFixed(3);
-
-  // Peak frequency
-  let maxIdx = 0, maxVal = 0;
-  for (let i = 0; i < freqData.length; i++) {
-    if (freqData[i] > maxVal) { maxVal = freqData[i]; maxIdx = i; }
-  }
-  const peakFreq = maxIdx * audioCtx.sampleRate / analyser.fftSize;
-  freqStat.textContent = Math.round(peakFreq) + ' Hz';
-}
-
-// ============================================================
-// Initial paint — so canvases aren't empty before mic is on
-// ============================================================
+// ============================================================================
+// Initial paint — placeholder text
+// ============================================================================
 function initialPaint() {
-  [oscCtx, fftCtx, fpCtx, specCtx].forEach(ctx => {
-    ctx.fillStyle = '#0b1424';
-    ctx.fillRect(0, 0, ctx.canvas.clientWidth, ctx.canvas.clientHeight);
+  Object.keys(ctxs).forEach(k => {
+    const c = ctxs[k];
+    c.fillStyle = '#070d1a';
+    c.fillRect(0, 0, canvases[k].clientWidth, canvases[k].clientHeight);
   });
-  oscCtx.fillStyle = '#5a6a8a';
-  oscCtx.font = '14px sans-serif';
-  oscCtx.textAlign = 'center';
-  oscCtx.fillText('Click "Enable microphone" to start →', oscCanvas.clientWidth/2, oscCanvas.clientHeight/2);
+  const c = ctxs.spec;
+  c.fillStyle = '#5a6a8a';
+  c.font = '13px sans-serif';
+  c.textAlign = 'center';
+  c.fillText('Click "Enable microphone" — then speak, whistle, or sing to see formants, pitch, and vowels tracked live.',
+             canvases.spec.clientWidth / 2, canvases.spec.clientHeight / 2);
 }
 initialPaint();
 </script>

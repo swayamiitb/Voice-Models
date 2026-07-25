@@ -31,11 +31,22 @@
 
 ---
 
-## 🎬 Live voice in motion
+## 🎙️ Live speech-science console
 
-> **[▶ OPEN THE LIVE DEMO](https://swayamiitb.github.io/Voice-Models/)** — click "Enable microphone" and your actual voice drives these visualizations in real time. Audio never leaves your device.
+> **[▶ OPEN THE LIVE DEMO](https://swayamiitb.github.io/Voice-Models/)** — click "Enable microphone" and your actual voice is analyzed in real time.
 
-The same DSP that powers VajraVoice's modules, animated. The oscilloscope shows what M5 consumes; the spectrum shows the formant bands M2 extracts; the fingerprint is a stand-in for the 256-d ECAPA-TDNN embedding M2 emits; the spectrogram is what M5 hands M6.
+This is **not** a generic oscilloscope. The console runs the same signal-processing primitives the TTS pipeline does — pitch detection, formant estimation, vowel classification — so you can literally *see* why Module 2 cares about formants and why Module 3 needs F0.
+
+| What it shows | How it works | Which module it informs |
+|---|---|---|
+| **Pitch contour (F0)** | Autocorrelation + parabolic interpolation, 70–400 Hz | **M3** prosody needs F0 trajectory |
+| **Formant tracker (F1, F2)** | Levinson-Durbin LPC + spectral peak-picking | **M2** identity; **M5** vowel quality |
+| **Vowel space (F1×F2 plane)** | Nearest-neighbour on 12 IPA anchors | Demonstrates *why* M1 needs G2P |
+| **Pipeline flow diagram** | Animated M1→M6 with voiced-energy driver | The whole architecture |
+
+> Try saying *"who'd it"* (high F2), then *"father"* (low F2). Watch the dot jump across the vowel chart. **That's the same physical fact Module 1 has to encode.**
+
+---
 
 <table align="center">
   <tr>
