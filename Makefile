@@ -43,7 +43,10 @@ typecheck:  ## Type-check with mypy
 	$(PYTHON) -m mypy vajravoice
 
 demo:  ## Run the stub-mode CLI demo (no GPU, no weights)
-	$(PYTHON) -m scripts.synthesize --text "Namaskar, aaj aapan ek navin prakalp baddal bolu." --config configs/stub.yaml
+	$(PYTHON) -m scripts.synthesize --text "Namaskar, aapan ek navin prakalp baddal bolu." --config configs/stub.yaml
+
+assets:  ## Regenerate the SVG visualizations in assets/
+	$(PYTHON) scripts/generate_assets.py
 
 serve:  ## Start the FastAPI server (stub mode by default)
 	$(PYTHON) -m uvicorn vajravoice.api.server:app --host 0.0.0.0 --port 8000 --reload
