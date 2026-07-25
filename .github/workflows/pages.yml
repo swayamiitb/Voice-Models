@@ -1,0 +1,41 @@
+name: deploy-live-demo
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'live-demo/**'
+      - '.github/workflows/pages.yml'
+  workflow_dispatch:
+
+# Permissions required by the Pages deploy action
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow only one concurrent Pages deployment
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload live-demo as Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: live-demo/
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
