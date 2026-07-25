@@ -23,10 +23,10 @@ jobs:
           python-version: ${{ matrix.python-version }}
           cache: pip
 
-      - name: Install package (lightweight deps only — no GPU stack)
+      - name: Install package (test deps only — stub-mode tests need no audio/torch stack)
         run: |
           python -m pip install --upgrade pip
-          pip install -e ".[api,audio,dev]"
+          pip install -e ".[dev]"
 
       - name: Lint
         run: |

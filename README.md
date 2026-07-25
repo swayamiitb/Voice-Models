@@ -1,4 +1,8 @@
 <p align="center">
+  <img src="assets/oscilloscope.gif" alt="VajraVoice — live oscilloscope" width="100%"/>
+</p>
+
+<p align="center">
   <img src="assets/logo.svg" alt="VajraVoice" width="280"/>
 </p>
 
@@ -20,13 +24,10 @@
   <a href="https://swayamiitb.github.io/Voice-Models/"><img src="https://img.shields.io/badge/DEMO-LIVE%20%E2%96%B6%20try%20with%20your%20mic-2ecc71?style=for-the-badge" alt="Live demo"/></a>
 </p>
 
-<br/>
+---
 
-<p align="center">
-  <img src="assets/hero_waveform.svg" alt="VajraVoice — synthesized speech waveform" width="100%"/>
-</p>
-
-<p align="center"><em>The waveform above is real DSP — synthesized with a glottal-source + formant-resonator model of the Marathi phrase <code>"namaskar"</code>, falling intonation contour and all. <a href="scripts/generate_assets.py">See how →</a></em></p>
+> ### 💡 The waveform above is alive.
+> It's not a still image — it's the **M5 input** of a synthesized Marathi phrase (`"namaskar"`), generated frame-by-frame by a glottal-source + formant-resonator speech model. The same DSP, in your browser with **your own voice**, lives at **[▶ swayamiitb.github.io/Voice-Models](https://swayamiitb.github.io/Voice-Models/)**.
 
 ---
 
@@ -38,16 +39,15 @@ The same DSP that powers VajraVoice's modules, animated. The oscilloscope shows 
 
 <table align="center">
   <tr>
-    <td width="50%" align="center"><b>_Oscilloscope — M5 input</b><br/><img src="assets/oscilloscope.gif" alt="oscilloscope" width="100%"/></td>
     <td width="50%" align="center"><b>_Spectrum — formant bands M2 sees</b><br/><img src="assets/eq_bars.gif" alt="spectrum analyzer" width="100%"/></td>
+    <td width="50%" align="center"><b>_Voice fingerprint — 256-d ECAPA blob</b><br/><img src="assets/fingerprint_pulse.gif" alt="voice fingerprint" width="100%"/></td>
   </tr>
   <tr>
-    <td width="50%" align="center"><b>_Voice fingerprint — 256-d ECAPA blob</b><br/><img src="assets/fingerprint_pulse.gif" alt="voice fingerprint" width="100%"/></td>
-    <td width="50%" align="center"><b>_Spectrogram — M5 → M6 contract</b><br/><img src="assets/spectrogram_scroll.gif" alt="spectrogram waterfall" width="100%"/></td>
+    <td colspan="2" align="center"><b>_Spectrogram — M5 → M6 contract</b><br/><img src="assets/spectrogram_scroll.gif" alt="spectrogram waterfall" width="100%"/></td>
   </tr>
 </table>
 
-<p align="center"><em>All four animations are generated from real signal-processing math in <a href="scripts/generate_animations.py">scripts/generate_animations.py</a> — no stock footage. Regenerate with <code>python scripts/generate_animations.py</code>.</em></p>
+<p align="center"><em>All four animations are generated from real signal-processing math in <a href="scripts/generate_animations.py">scripts/generate_animations.py</a> — no stock footage. Regenerate with <code>make animations</code>.</em></p>
 
 ---
 
