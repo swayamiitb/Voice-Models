@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VajraVoice · Live Voice Visualizer</title>
+<style>
+  :root {
+    --ink: #0b1424;
+    --ink-2: #1a2540;
+    --paper: #f7f9fc;
+    --brand: #4c8dff;
+    --brand-2: #7aa9ff;
+    --teal: #06b6d4;
+    --amber: #f5a623;
+    --green: #2ecc71;
+    --purple: #a855f7;
+    --red: #e74c3c;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: linear-gradient(180deg, #0b1424 0%, #1a2540 100%);
+    color: var(--paper);
+    min-height: 100vh;
+    padding: 20px;
+  }
+  .container { max-width: 1200px; margin: 0 auto; }
+  header { text-align: center; margin-bottom: 30px; }
+  header h1 {
+    font-size: 2.4em; font-weight: 800; letter-spacing: -0.5px;
+    background: linear-gradient(90deg, var(--brand), var(--teal), var(--amber));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text; margin-bottom: 8px;
+  }
+  header p { color: #8a98b8; font-size: 1em; }
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+    margin-bottom: 18px;
+  }
+  @media (max-width: 760px) { .grid { grid-template-columns: 1fr; } }
+  .panel {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 14px;
+    padding: 16px;
+    backdrop-filter: blur(8px);
+  }
+  .panel h3 {
+    font-size: 0.78em; font-weight: 700; letter-spacing: 1.5px;
+    text-transform: uppercase; color: #8a98b8; margin-bottom: 12px;
+  }
+  .panel.full { grid-column: 1 / -1; }
+  canvas { width: 100%; height: auto; display: block; border-radius: 8px; }
+  .controls {
+    display: flex; gap: 12px; align-items: center; justify-content: center;
+    flex-wrap: wrap; margin: 24px 0;
+  }
+  button {
+    background: linear-gradient(135deg, var(--brand), var(--teal));
+    color: white; border: none; padding: 14px 28px;
+    font-size: 1em; font-weight: 600; border-radius: 999px;
+    cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 20px rgba(76,141,255,0.4);
+  }
+  button:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(76,141,255,0.6); }
+  button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+  button.danger { background: linear-gradient(135deg, var(--red), #c0392b); box-shadow: 0 4px 20px rgba(231,76,60,0.4); }
+  .status {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 8px 16px; border-radius: 999px;
+    background: rgba(255,255,255,0.06); font-size: 0.9em; color: #8a98b8;
+  }
+  .status .dot {
+    width: 8px; height: 8px; border-radius: 50%; background: #8a98b8;
+  }
+  .status.live .dot { background: var(--green); animation: pulse 1.5s ease infinite; }
+  @keyframes pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(46,204,113,0.6); }
+    50% { box-shadow: 0 0 0 8px rgba(46,204,113,0); }
+  }
+  .stats {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;
+    margin-top: 16px;
+  }
+  @media (max-width: 600px) { .stats { grid-template-columns: repeat(2, 1fr); } }
+  .stat {
+    background: rgba(255,255,255,0.03); border-radius: 8px; padding: 12px;
+    text-align: center;
+  }
+  .stat .label { font-size: 0.7em; color: #8a98b8; text-transform: uppercase; letter-spacing: 1px; }
+  .stat .value { font-size: 1.4em; font-weight: 700; color: var(--brand-2); font-family: monospace; }
+  .footnote { text-align: center; color: #5a6a8a; font-size: 0.85em; margin-top: 24px; line-height: 1.6; }
+  .footnote a { color: var(--brand-2); text-decoration: none; }
+  .footnote a:hover { text-decoration: underline; }
+  .hidden { display: none; }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>VajraVoice · Live</h1>
+    <p>Real-time voice visualizer — the same DSP that powers a six-module neural TTS pipeline, in your browser.</p>
+  </header>
+
+  <div class="controls">
+    <button id="startBtn">🎙️ Enable microphone</button>
+    <button id="stopBtn" class="danger hidden">⏹ Stop</button>
+    <div class="status" id="status"><span class="dot"></span><span id="statusText">Microphone off</span></div>
+  </div>
+
+  <div class="grid">
+    <div class="panel full">
+      <h3>_Oscilloscope · time-domain waveform</h3>
+      <canvas id="osc" width="1100" height="180"></canvas>
+    </div>
+
+    <div class="panel">
+      <h3>_Spectrum · 32-band FFT analyzer</h3>
+      <canvas id="fft" width="540" height="240"></canvas>
+    </div>
+
+    <div class="panel">
+      <h3>_Voice fingerprint · radial identity</h3>
+      <canvas id="fp" width="540" height="240"></canvas>
+    </div>
+
+    <div class="panel full">
+      <h3>_Spectrogram · waterfall, 0–8 kHz</h3>
+      <canvas id="spec" width="1100" height="160"></canvas>
+    </div>
+
+    <div class="panel full">
+      <h3>_Live telemetry</h3>
+      <div class="stats">
+        <div class="stat"><div class="label">Sample rate</div><div class="value" id="srStat">—</div></div>
+        <div class="stat"><div class="label">FFT size</div><div class="value" id="fftStat">2048</div></div>
+        <div class="stat"><div class="label">RMS level</div><div class="value" id="rmsStat">0.00</div></div>
+        <div class="stat"><div class="label">Peak freq</div><div class="value" id="freqStat">— Hz</div></div>
+      </div>
+    </div>
+  </div>
+
+  <p class="footnote">
+    Visualizations driven by the <a href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Audio_API" target="_blank">Web Audio API</a>.
+    Your audio never leaves your device — analysis runs locally in the browser.<br/>
+    Part of <a href="https://github.com/swayamiitb/Voice-Models">VajraVoice</a> — a six-module open-source neural TTS engine.
+  </p>
+</div>
+
+<script>
+// ====================================================================
+// VajraVoice live visualizer — pure WebAudio + canvas, no deps.
+// ====================================================================
+const startBtn = document.getElementById('startBtn');
+const stopBtn  = document.getElementById('stopBtn');
+const status   = document.getElementById('status');
+const statusText = document.getElementById('statusText');
+const srStat = document.getElementById('srStat');
+const rmsStat = document.getElementById('rmsStat');
+const freqStat = document.getElementById('freqStat');
+
+let audioCtx = null, analyser = null, micStream = null, rafId = null;
+
+// Canvas contexts
+const oscCanvas = document.getElementById('osc');
+const fftCanvas = document.getElementById('fft');
+const fpCanvas  = document.getElementById('fp');
+const specCanvas = document.getElementById('spec');
+const oscCtx = oscCanvas.getContext('2d');
+const fftCtx = fftCanvas.getContext('2d');
+const fpCtx  = fpCanvas.getContext('2d');
+const specCtx = specCanvas.getContext('2d');
+
+// High-DPI scaling
+function setupHiDPI(canvas, ctx) {
+  const dpr = window.devicePixelRatio || 1;
+  const rect = canvas.getBoundingClientRect();
+  canvas.width = rect.width * dpr;
+  canvas.height = rect.height * dpr;
+  ctx.scale(dpr, dpr);
+}
+[oscCanvas, fftCanvas, fpCanvas, specCanvas].forEach(c => setupHiDPI(c, c.getContext('2d')));
+
+// Persistent state
+const FP_SIZE = 256;
+let fpEmbedding = new Float32Array(FP_SIZE);   // smoothed "identity" estimate
+let specHistory = [];                           // scrolling spectrogram rows
+const SPEC_ROWS = 80;
+
+// ============================================================
+// start
+// ============================================================
+async function start() {
+  try {
+    micStream = await navigator.mediaDevices.getUserMedia({
+      audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false }
+    });
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    srStat.textContent = (audioCtx.sampleRate / 1000).toFixed(1) + ' kHz';
+    const source = audioCtx.createMediaStreamSource(micStream);
+    analyser = audioCtx.createAnalyser();
+    analyser.fftSize = 2048;
+    analyser.smoothingTimeConstant = 0.75;
+    source.connect(analyser);
+
+    startBtn.classList.add('hidden');
+    stopBtn.classList.remove('hidden');
+    status.classList.add('live');
+    statusText.textContent = 'Microphone live';
+
+    draw();
+  } catch (err) {
+    alert('Could not access microphone: ' + err.message +
+          '\n\nThis demo needs mic permission. On GitHub Pages it requires HTTPS (which it has).');
+  }
+}
+
+function stop() {
+  if (rafId) cancelAnimationFrame(rafId);
+  rafId = null;
+  if (micStream) micStream.getTracks().forEach(t => t.stop());
+  if (audioCtx) audioCtx.close();
+  audioCtx = null; analyser = null; micStream = null;
+  startBtn.classList.remove('hidden');
+  stopBtn.classList.add('hidden');
+  status.classList.remove('live');
+  statusText.textContent = 'Microphone off';
+  srStat.textContent = '—'; rmsStat.textContent = '0.00'; freqStat.textContent = '— Hz';
+  fpEmbedding = new Float32Array(FP_SIZE);
+}
+
+startBtn.addEventListener('click', start);
+stopBtn.addEventListener('click', stop);
+
+// ============================================================
+// main draw loop
+// ============================================================
+function draw() {
+  if (!analyser) return;
+  rafId = requestAnimationFrame(draw);
+
+  const timeData = new Uint8Array(analyser.fftSize);
+  const freqData = new Uint8Array(analyser.frequencyBinCount);
+  analyser.getByteTimeDomainData(timeData);
+  analyser.getByteFrequencyData(freqData);
+
+  drawOscilloscope(timeData);
+  drawFFT(freqData);
+  drawFingerprint(freqData);
+  drawSpectrogram(freqData);
+  updateStats(timeData, freqData);
+}
+
+// ============================================================
+// 1) Oscilloscope — time-domain waveform
+// ============================================================
+function drawOscilloscope(timeData) {
+  const w = oscCanvas.clientWidth, h = oscCanvas.clientHeight;
+  // Fade-clear for ghost trail
+  oscCtx.fillStyle = 'rgba(11, 20, 36, 0.25)';
+  oscCtx.fillRect(0, 0, w, h);
+
+  // Grid
+  oscCtx.strokeStyle = 'rgba(255,255,255,0.05)';
+  oscCtx.lineWidth = 1;
+  for (let y = 0; y < h; y += 30) {
+    oscCtx.beginPath(); oscCtx.moveTo(0, y); oscCtx.lineTo(w, y); oscCtx.stroke();
+  }
+  oscCtx.strokeStyle = 'rgba(255,255,255,0.12)';
+  oscCtx.beginPath(); oscCtx.moveTo(0, h/2); oscCtx.lineTo(w, h/2); oscCtx.stroke();
+
+  // Glow underlay
+  oscCtx.strokeStyle = 'rgba(76,141,255,0.35)';
+  oscCtx.lineWidth = 6;
+  oscCtx.beginPath();
+  for (let i = 0; i < timeData.length; i++) {
+    const x = (i / timeData.length) * w;
+    const v = (timeData[i] - 128) / 128;
+    const y = h/2 + v * (h/2 - 8);
+    if (i === 0) oscCtx.moveTo(x, y); else oscCtx.lineTo(x, y);
+  }
+  oscCtx.stroke();
+
+  // Sharp waveform
+  const grad = oscCtx.createLinearGradient(0, 0, w, 0);
+  grad.addColorStop(0, '#4c8dff'); grad.addColorStop(0.5, '#06b6d4'); grad.addColorStop(1, '#f5a623');
+  oscCtx.strokeStyle = grad;
+  oscCtx.lineWidth = 2;
+  oscCtx.beginPath();
+  for (let i = 0; i < timeData.length; i++) {
+    const x = (i / timeData.length) * w;
+    const v = (timeData[i] - 128) / 128;
+    const y = h/2 + v * (h/2 - 8);
+    if (i === 0) oscCtx.moveTo(x, y); else oscCtx.lineTo(x, y);
+  }
+  oscCtx.stroke();
+}
+
+// ============================================================
+// 2) FFT spectrum bars with peak-hold markers
+// ============================================================
+const N_BANDS = 32;
+let peaks = new Float32Array(N_BANDS);
+let peakVel = new Float32Array(N_BANDS);
+
+function drawFFT(freqData) {
+  const w = fftCanvas.clientWidth, h = fftCanvas.clientHeight;
+  fftCtx.fillStyle = 'rgba(11, 20, 36, 1)';
+  fftCtx.fillRect(0, 0, w, h);
+
+  // Aggregate into log-spaced bands
+  const sr = audioCtx.sampleRate;
+  const bands = new Float32Array(N_BANDS);
+  const edges = [];
+  for (let i = 0; i <= N_BANDS; i++) {
+    edges.push(80 * Math.pow(sr / 2 / 80, i / N_BANDS));
+  }
+  for (let b = 0; b < N_BANDS; b++) {
+    const lo = Math.floor(edges[b] / sr * 2 * freqData.length);
+    const hi = Math.floor(edges[b+1] / sr * 2 * freqData.length);
+    let mx = 0;
+    for (let i = lo; i <= hi && i < freqData.length; i++) mx = Math.max(mx, freqData[i]);
+    bands[b] = mx / 255;
+  }
+
+  // Peak-hold
+  for (let b = 0; b < N_BANDS; b++) {
+    if (bands[b] > peaks[b]) { peaks[b] = bands[b]; peakVel[b] = 0; }
+    else { peakVel[b] += 0.012; peaks[b] = Math.max(0, peaks[b] - peakVel[b]); }
+  }
+
+  const pad = 12;
+  const barW = (w - 2*pad) / N_BANDS;
+  const baseY = h - 16;
+  for (let b = 0; b < N_BANDS; b++) {
+    const x = pad + b * barW + 2;
+    const bh = Math.max(2, bands[b] * (h - 32));
+    const y = baseY - bh;
+    let col;
+    if (bands[b] < 0.4) col = '#06b6d4';
+    else if (bands[b] < 0.75) col = '#4c8dff';
+    else col = '#f5a623';
+    fftCtx.fillStyle = col;
+    fftCtx.fillRect(x, y, barW - 4, bh);
+    fftCtx.fillStyle = 'rgba(255,255,255,0.7)';
+    fftCtx.fillRect(x, y, barW - 4, 2);
+    // Peak marker
+    const py = baseY - Math.max(2, peaks[b] * (h - 32));
+    fftCtx.fillStyle = '#e74c3c';
+    fftCtx.fillRect(x, py - 1, barW - 4, 2);
+  }
+  fftCtx.strokeStyle = 'rgba(255,255,255,0.2)';
+  fftCtx.beginPath(); fftCtx.moveTo(pad, baseY); fftCtx.lineTo(w - pad, baseY); fftCtx.stroke();
+}
+
+// ============================================================
+// 3) Radial voice fingerprint
+// ============================================================
+function drawFingerprint(freqData) {
+  const w = fpCanvas.clientWidth, h = fpCanvas.clientHeight;
+  const cx = w/2, cy = h/2;
+  fpCtx.fillStyle = 'rgba(11, 20, 36, 1)';
+  fpCtx.fillRect(0, 0, w, h);
+
+  // Build a pseudo-embedding from current spectrum (32 bands → smooth to 256)
+  // This stands in for the ECAPA-TDNN 256-d embedding; in the real pipeline
+  // this is a learned projection. Here we use the live spectrum to drive it,
+  // so the blob visibly responds to your voice.
+  const target = new Float32Array(FP_SIZE);
+  for (let i = 0; i < FP_SIZE; i++) {
+    const bandIdx = Math.floor(i / FP_SIZE * freqData.length * 0.4);
+    target[i] = freqData[bandIdx] / 255;
+  }
+  // Smooth: low-pass the embedding (slow-follow)
+  for (let i = 0; i < FP_SIZE; i++) {
+    fpEmbedding[i] += (target[i] - fpEmbedding[i]) * 0.08;
+  }
+
+  // Concentric guides
+  fpCtx.strokeStyle = 'rgba(255,255,255,0.06)';
+  fpCtx.lineWidth = 1;
+  for (const r of [30, 55, 80]) {
+    fpCtx.beginPath(); fpCtx.arc(cx, cy, r, 0, Math.PI * 2); fpCtx.stroke();
+  }
+
+  // Polygon
+  const t = performance.now() * 0.001;
+  const rot = t * 0.3;
+  const pts = [];
+  for (let i = 0; i < FP_SIZE; i++) {
+    const angle = (i / FP_SIZE) * Math.PI * 2 + rot;
+    const r = 30 + 55 * fpEmbedding[i];
+    pts.push([cx + r * Math.cos(angle), cy + r * Math.sin(angle)]);
+  }
+  // Fill
+  fpCtx.fillStyle = 'rgba(76,141,255,0.18)';
+  fpCtx.beginPath();
+  fpCtx.moveTo(pts[0][0], pts[0][1]);
+  for (const p of pts) fpCtx.lineTo(p[0], p[1]);
+  fpCtx.closePath(); fpCtx.fill();
+  // Stroke
+  fpCtx.strokeStyle = '#4c8dff'; fpCtx.lineWidth = 1.5;
+  fpCtx.stroke();
+  // Spokes
+  fpCtx.strokeStyle = 'rgba(122,169,255,0.35)'; fpCtx.lineWidth = 1;
+  for (let i = 0; i < FP_SIZE; i += 8) {
+    fpCtx.beginPath();
+    fpCtx.moveTo(cx, cy); fpCtx.lineTo(pts[i][0], pts[i][1]); fpCtx.stroke();
+  }
+  // Outer dots
+  fpCtx.fillStyle = '#06b6d4';
+  for (let i = 0; i < FP_SIZE; i += 8) {
+    fpCtx.beginPath(); fpCtx.arc(pts[i][0], pts[i][1], 1.8, 0, Math.PI*2); fpCtx.fill();
+  }
+  // Hub
+  fpCtx.fillStyle = '#0b1424'; fpCtx.beginPath(); fpCtx.arc(cx, cy, 6, 0, Math.PI*2); fpCtx.fill();
+  fpCtx.strokeStyle = '#4c8dff'; fpCtx.lineWidth = 1.5; fpCtx.stroke();
+}
+
+// ============================================================
+// 4) Scrolling spectrogram (waterfall)
+// ============================================================
+function drawSpectrogram(freqData) {
+  const w = specCanvas.clientWidth, h = specCanvas.clientHeight;
+
+  // On first call, initialize the history
+  if (specHistory.length === 0) {
+    for (let r = 0; r < SPEC_ROWS; r++) specHistory.push(new Uint8Array(freqData.length));
+  }
+
+  // Push new column to the end; everything scrolls left
+  specHistory.push(new Uint8Array(freqData));
+  if (specHistory.length > SPEC_ROWS) specHistory.shift();
+
+  specCtx.fillStyle = '#0b1424';
+  specCtx.fillRect(0, 0, w, h);
+
+  const colW = w / SPEC_ROWS;
+  const binsToShow = Math.min(80, freqData.length);  // show ~0-8 kHz
+  for (let col = 0; col < SPEC_ROWS; col++) {
+    const data = specHistory[col];
+    if (!data) continue;
+    for (let bin = 0; bin < binsToShow; bin++) {
+      const v = data[bin] / 255;
+      if (v < 0.08) continue;
+      const x = col * colW;
+      const y = h - (bin / binsToShow) * h;
+      specCtx.fillStyle = heatColor(v);
+      specCtx.fillRect(x, y - h/binsToShow, colW + 0.6, h/binsToShow + 0.6);
+    }
+  }
+}
+
+function heatColor(v) {
+  // Viridis-ish: purple → blue → teal → green → yellow
+  if (v < 0.25) { const t = v/0.25; return `rgb(${13+30*t|0},${8+40*t|0},${60+80*t|0})`; }
+  if (v < 0.5)  { const t = (v-0.25)/0.25; return `rgb(43,${48+70*t|0},${140+60*t|0})`; }
+  if (v < 0.75) { const t = (v-0.5)/0.25; return `rgb(${43+60*t|0},${118+80*t|0},${200-100*t|0})`; }
+  const t = (v-0.75)/0.25;
+  return `rgb(${103+150*t|0},${198+30*t|0},${100-60*t|0})`;
+}
+
+// ============================================================
+// Telemetry
+// ============================================================
+function updateStats(timeData, freqData) {
+  // RMS
+  let sum = 0;
+  for (let i = 0; i < timeData.length; i++) {
+    const v = (timeData[i] - 128) / 128;
+    sum += v * v;
+  }
+  const rms = Math.sqrt(sum / timeData.length);
+  rmsStat.textContent = rms.toFixed(3);
+
+  // Peak frequency
+  let maxIdx = 0, maxVal = 0;
+  for (let i = 0; i < freqData.length; i++) {
+    if (freqData[i] > maxVal) { maxVal = freqData[i]; maxIdx = i; }
+  }
+  const peakFreq = maxIdx * audioCtx.sampleRate / analyser.fftSize;
+  freqStat.textContent = Math.round(peakFreq) + ' Hz';
+}
+
+// ============================================================
+// Initial paint — so canvases aren't empty before mic is on
+// ============================================================
+function initialPaint() {
+  [oscCtx, fftCtx, fpCtx, specCtx].forEach(ctx => {
+    ctx.fillStyle = '#0b1424';
+    ctx.fillRect(0, 0, ctx.canvas.clientWidth, ctx.canvas.clientHeight);
+  });
+  oscCtx.fillStyle = '#5a6a8a';
+  oscCtx.font = '14px sans-serif';
+  oscCtx.textAlign = 'center';
+  oscCtx.fillText('Click "Enable microphone" to start →', oscCanvas.clientWidth/2, oscCanvas.clientHeight/2);
+}
+initialPaint();
+</script>
+</body>
+</html>

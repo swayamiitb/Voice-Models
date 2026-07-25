@@ -48,6 +48,11 @@ demo:  ## Run the stub-mode CLI demo (no GPU, no weights)
 assets:  ## Regenerate the SVG visualizations in assets/
 	$(PYTHON) scripts/generate_assets.py
 
+animations:  ## Regenerate the animated GIFs in assets/
+	$(PYTHON) scripts/generate_animations.py
+
+media: assets animations  ## Regenerate all visual assets (SVGs + GIFs)
+
 serve:  ## Start the FastAPI server (stub mode by default)
 	$(PYTHON) -m uvicorn vajravoice.api.server:app --host 0.0.0.0 --port 8000 --reload
 

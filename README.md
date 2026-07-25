@@ -16,6 +16,10 @@
   <img src="https://img.shields.io/badge/licence%20audit-100%25%20tracked-2ecc71.svg" alt="licensing"/>
 </p>
 
+<p align="center">
+  <a href="https://swayamiitb.github.io/Voice-Models/"><img src="https://img.shields.io/badge/DEMO-LIVE%20%E2%96%B6%20try%20with%20your%20mic-2ecc71?style=for-the-badge" alt="Live demo"/></a>
+</p>
+
 <br/>
 
 <p align="center">
@@ -23,6 +27,27 @@
 </p>
 
 <p align="center"><em>The waveform above is real DSP — synthesized with a glottal-source + formant-resonator model of the Marathi phrase <code>"namaskar"</code>, falling intonation contour and all. <a href="scripts/generate_assets.py">See how →</a></em></p>
+
+---
+
+## 🎬 Live voice in motion
+
+> **[▶ OPEN THE LIVE DEMO](https://swayamiitb.github.io/Voice-Models/)** — click "Enable microphone" and your actual voice drives these visualizations in real time. Audio never leaves your device.
+
+The same DSP that powers VajraVoice's modules, animated. The oscilloscope shows what M5 consumes; the spectrum shows the formant bands M2 extracts; the fingerprint is a stand-in for the 256-d ECAPA-TDNN embedding M2 emits; the spectrogram is what M5 hands M6.
+
+<table align="center">
+  <tr>
+    <td width="50%" align="center"><b>_Oscilloscope — M5 input</b><br/><img src="assets/oscilloscope.gif" alt="oscilloscope" width="100%"/></td>
+    <td width="50%" align="center"><b>_Spectrum — formant bands M2 sees</b><br/><img src="assets/eq_bars.gif" alt="spectrum analyzer" width="100%"/></td>
+  </tr>
+  <tr>
+    <td width="50%" align="center"><b>_Voice fingerprint — 256-d ECAPA blob</b><br/><img src="assets/fingerprint_pulse.gif" alt="voice fingerprint" width="100%"/></td>
+    <td width="50%" align="center"><b>_Spectrogram — M5 → M6 contract</b><br/><img src="assets/spectrogram_scroll.gif" alt="spectrogram waterfall" width="100%"/></td>
+  </tr>
+</table>
+
+<p align="center"><em>All four animations are generated from real signal-processing math in <a href="scripts/generate_animations.py">scripts/generate_animations.py</a> — no stock footage. Regenerate with <code>python scripts/generate_animations.py</code>.</em></p>
 
 ---
 
